@@ -1,12 +1,11 @@
-// Chat Bot Interface 
 import { User2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { sendMessageToAI } from "@/utils/api";
 import { useToast } from "@/hooks/use-toast";
+import { AudioRecorder } from "./AudioRecorder";
 
 interface Message {
   type: "user" | "ai";
@@ -27,47 +26,42 @@ export const InterviewInterface = ({
   jobDescription,
 }: InterviewInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSendMessage = async () => {
-    if (userInput.trim()) {
-      // Add user message
+  const handleAudioRecorded = async (audioBlob: Blob) => {
+    setIsLoading(true);
+
+    try {
+      // Create a File object from the Blob
+      const audioFile = new File([audioBlob], "audio_message.wav", {
+        type: "audio/wav",
+      });
+
+      // Add user message placeholder
       const userMessage: Message = {
         type: "user",
-        content: userInput,
+        content: "🎤 Voice message sent",
+      };
+      setMessages((prev) => [...prev, userMessage]);
+
+      // Get AI response
+      const aiResponse = await sendMessageToAI(audioFile, resume, jobDescription);
+      
+      const aiMessage: Message = {
+        type: "ai",
+        content: aiResponse,
       };
 
-      setMessages((prev) => [...prev, userMessage]);
-      setUserInput(""); // Clear input after sending
-      setIsLoading(true);
-
-      try {
-        // Get AI response
-        const aiResponse = await sendMessageToAI(userInput, resume, jobDescription);
-        
-        const aiMessage: Message = {
-          type: "ai",
-          content: aiResponse,
-        };
-
-        setMessages((prev) => [...prev, aiMessage]);
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to get AI response. Please try again.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !isLoading) {
-      handleSendMessage();
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to process voice message. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -81,7 +75,7 @@ export const InterviewInterface = ({
           <h2 className="text-2xl font-semibold mb-2">AI Interviewer</h2>
           <p className="text-gray-600 text-center max-w-md">
             {isInterviewStarted
-              ? "Interview in progress. Type your responses and press Enter or click Send."
+              ? "Interview in progress. Click the microphone button and speak your response."
               : "Ready to start your interview? Click the button below when you're ready."}
           </p>
         </div>
@@ -121,21 +115,8 @@ export const InterviewInterface = ({
               ))}
             </ScrollArea>
 
-            <div className="flex items-center gap-2">
-              <Input
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your response..."
-                className="flex-1"
-                disabled={isLoading}
-              />
-              <Button 
-                onClick={handleSendMessage} 
-                disabled={!userInput.trim() || isLoading}
-              >
-                {isLoading ? "Sending..." : "Send"}
-              </Button>
+            <div className="flex justify-center pt-4">
+              <AudioRecorder onRecordingComplete={handleAudioRecorded} />
             </div>
           </div>
         )}
@@ -143,4 +124,3 @@ export const InterviewInterface = ({
     </div>
   );
 };
-
