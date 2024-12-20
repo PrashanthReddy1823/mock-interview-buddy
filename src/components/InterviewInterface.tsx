@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { sendMessageToAI } from "@/utils/api";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   type: "user" | "ai";
@@ -21,8 +23,10 @@ export const InterviewInterface = ({
 }: InterviewInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (userInput.trim()) {
       // Add user message
       const userMessage: Message = {
@@ -30,19 +34,34 @@ export const InterviewInterface = ({
         content: userInput,
       };
 
-      // Simulate AI response - this will be replaced with actual AI integration
-      const aiMessage: Message = {
-        type: "ai",
-        content: "Thank you for your response. Here's another question: Can you describe a challenging project you've worked on?",
-      };
-
-      setMessages((prev) => [...prev, userMessage, aiMessage]);
+      setMessages((prev) => [...prev, userMessage]);
       setUserInput(""); // Clear input after sending
+      setIsLoading(true);
+
+      try {
+        // Get AI response
+        const aiResponse = await sendMessageToAI(userInput);
+        
+        const aiMessage: Message = {
+          type: "ai",
+          content: aiResponse,
+        };
+
+        setMessages((prev) => [...prev, aiMessage]);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to get AI response. Please try again.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !isLoading) {
       handleSendMessage();
     }
   };
@@ -104,9 +123,13 @@ export const InterviewInterface = ({
                 onKeyPress={handleKeyPress}
                 placeholder="Type your response..."
                 className="flex-1"
+                disabled={isLoading}
               />
-              <Button onClick={handleSendMessage} disabled={!userInput.trim()}>
-                Send
+              <Button 
+                onClick={handleSendMessage} 
+                disabled={!userInput.trim() || isLoading}
+              >
+                {isLoading ? "Sending..." : "Send"}
               </Button>
             </div>
           </div>
