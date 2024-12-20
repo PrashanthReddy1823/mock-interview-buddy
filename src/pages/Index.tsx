@@ -52,6 +52,8 @@ const Index = () => {
         <InterviewInterface
           onStartInterview={handleStartInterview}
           isInterviewStarted={isInterviewStarted}
+          resume={resume}
+          jobDescription={jobDescription}
         />
       </div>
     </div>

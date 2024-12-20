@@ -1,10 +1,22 @@
-export const sendMessageToAI = async (userInput: string): Promise<string> => {
+export const sendMessageToAI = async (
+  userInput: string,
+  resume: File | null,
+  jobDescription: File | null
+): Promise<string> => {
   try {
     const url = "https://api.vectorshift.ai/api/pipelines/run";
     const data = new FormData();
     data.append("pipeline_name", "Interview Simulator ");
     data.append("username", "reno123");
     data.append("User_input", userInput);
+
+    // Add resume and job description files if they exist
+    if (resume) {
+      data.append("resume", resume);
+    }
+    if (jobDescription) {
+      data.append("job_description", jobDescription);
+    }
 
     const response = await fetch(url, {
       method: 'POST',

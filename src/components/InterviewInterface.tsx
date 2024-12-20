@@ -15,11 +15,15 @@ interface Message {
 interface InterviewInterfaceProps {
   onStartInterview: () => void;
   isInterviewStarted: boolean;
+  resume: File | null;
+  jobDescription: File | null;
 }
 
 export const InterviewInterface = ({
   onStartInterview,
   isInterviewStarted,
+  resume,
+  jobDescription,
 }: InterviewInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState("");
@@ -40,7 +44,7 @@ export const InterviewInterface = ({
 
       try {
         // Get AI response
-        const aiResponse = await sendMessageToAI(userInput);
+        const aiResponse = await sendMessageToAI(userInput, resume, jobDescription);
         
         const aiMessage: Message = {
           type: "ai",
