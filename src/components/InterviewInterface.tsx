@@ -1,7 +1,8 @@
-import { Mic, MicOff, User2 } from "lucide-react";
+import { User2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 interface Message {
@@ -18,27 +19,31 @@ export const InterviewInterface = ({
   onStartInterview,
   isInterviewStarted,
 }: InterviewInterfaceProps) => {
-  const [isMicOn, setIsMicOn] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [userInput, setUserInput] = useState("");
 
-  const handleMicToggle = () => {
-    setIsMicOn(!isMicOn);
-    // This is where you'll later integrate the actual microphone handling
-  };
-
-  // Temporary function to simulate AI responses - will be replaced with actual AI integration
   const handleSendMessage = () => {
-    if (isMicOn) {
+    if (userInput.trim()) {
+      // Add user message
       const userMessage: Message = {
         type: "user",
-        content: "Your response has been recorded.",
+        content: userInput,
       };
+
+      // Simulate AI response - this will be replaced with actual AI integration
       const aiMessage: Message = {
         type: "ai",
-        content: "Tell me about your experience with React development?",
+        content: "Thank you for your response. Here's another question: Can you describe a challenging project you've worked on?",
       };
+
       setMessages((prev) => [...prev, userMessage, aiMessage]);
-      setIsMicOn(false);
+      setUserInput(""); // Clear input after sending
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSendMessage();
     }
   };
 
@@ -52,7 +57,7 @@ export const InterviewInterface = ({
           <h2 className="text-2xl font-semibold mb-2">AI Interviewer</h2>
           <p className="text-gray-600 text-center max-w-md">
             {isInterviewStarted
-              ? "Interview in progress. Speak clearly and take your time with responses."
+              ? "Interview in progress. Type your responses and press Enter or click Send."
               : "Ready to start your interview? Click the button below when you're ready."}
           </p>
         </div>
@@ -62,12 +67,16 @@ export const InterviewInterface = ({
             onClick={onStartInterview}
             className="mx-auto flex items-center gap-2"
           >
-            <Mic className="w-4 h-4" />
             Start Interview
           </Button>
         ) : (
           <div className="space-y-6">
             <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+              {messages.length === 0 && (
+                <div className="text-center text-gray-500 py-4">
+                  Let's begin! Tell me about yourself.
+                </div>
+              )}
               {messages.map((message, index) => (
                 <div
                   key={index}
@@ -88,29 +97,17 @@ export const InterviewInterface = ({
               ))}
             </ScrollArea>
 
-            <div className="flex items-center justify-center gap-4">
-              <Button
-                variant={isMicOn ? "destructive" : "default"}
-                onClick={handleMicToggle}
-                className="flex items-center gap-2"
-              >
-                {isMicOn ? (
-                  <>
-                    <MicOff className="w-4 h-4" />
-                    Stop Recording
-                  </>
-                ) : (
-                  <>
-                    <Mic className="w-4 h-4" />
-                    Start Recording
-                  </>
-                )}
+            <div className="flex items-center gap-2">
+              <Input
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your response..."
+                className="flex-1"
+              />
+              <Button onClick={handleSendMessage} disabled={!userInput.trim()}>
+                Send
               </Button>
-              {isMicOn && (
-                <Button onClick={handleSendMessage} variant="outline">
-                  Send Response
-                </Button>
-              )}
             </div>
           </div>
         )}
