@@ -9,7 +9,7 @@ export const sendMessageToAI = async (userInput: string): Promise<string> => {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        "Api-Key": process.env.VECTORSHIFT_API_KEY || '',
+        "Api-Key": "YOUR_API_KEY", // Replace this with your actual API key
       },
       body: data,
     });
