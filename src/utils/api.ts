@@ -28,7 +28,7 @@ export const sendMessageToAI = async (
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        "Api-Key": "sk_8V2P8AP0H8QWkCAwlM8VvP21HYtKaVj6yDKCI0kJhiZ8NXlx",
+        "Api-Key": "sk_",
       },
       body: data,
     });
