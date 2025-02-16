@@ -1,6 +1,7 @@
 # Welcome to your Lovable project
 
 ## Project info
+## Contact Repo Owner for more details of this project
 
 **URL**: https://lovable.dev/projects/30c69eec-3c5c-401b-ac3f-bb27c1d6ab45
 
